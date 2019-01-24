@@ -475,7 +475,7 @@ class MisReport(models.Model):
                     if '.' in kpi.expression:
                         report_descript, kpi_name = kpi.expression.split('.')
                         inherit = kpi.search(
-                            [('report_id.description', '=', report_descript),
+                            [('report_id.code', '=', report_descript),
                              ('name', '=', kpi_name)]
                         )
                         recompute_inherit[inherit.report_id.id] = inherit.report_id
@@ -527,7 +527,7 @@ class MisReport(models.Model):
                 report_descript, kpi_name = kpi.expression.split('.')
 
                 inherit = kpi.search(
-                    [('report_id.description', '=', report_descript),
+                    [('report_id.code', '=', report_descript),
                      ('name', '=', kpi_name)]
                 )
 
@@ -553,7 +553,6 @@ class MisReport(models.Model):
                 # so we stop trying
                 break
             # try again
-
             compute_queue = recompute_queue
             recompute_queue = []
 
