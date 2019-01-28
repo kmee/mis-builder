@@ -513,22 +513,22 @@ class MisReport(models.Model):
                                             report_id=inherit_report_id
                                         )
 
-                                    content = \
-                                        inherit_subreport_vals_res.get(
-                                            'content')
+                                    content = []
+                                    for d in inherit_subreport_vals_res:
+                                        content += d.get('content')
 
                                     for kpi_col in content:
                                         # Fill the inherit_subreport_vals DICT
                                         # with each of its KPI's informations
                                         inherit_subreport_vals.get(
                                             inherit_report_id.code)[
-                                            kpi_col.get('kpi_name')] = \
+                                            kpi_col.get('kpi_unique_name')] = \
                                             kpi_col.get('cols')[0]
                                         # Then fill the localdict with the KPI
                                         # val, using the underscore notation
                                         localdict[
                                             inherit_report_id.code + '_' +
-                                            kpi_col.get('kpi_name')] = \
+                                            kpi_col.get('kpi_unique_name')] = \
                                             kpi_col.get('cols')[0].get('val')
 
                     kpi_val = safe_eval(kpi_eval_expression, localdict)
@@ -983,6 +983,7 @@ class MisReportInstance(models.Model):
         for kpi in kpi_ids:
             rows_by_kpi_name[kpi.name] = {
                 'kpi_name': kpi.description,
+                'kpi_unique_name': kpi.name,
                 'cols': [],
                 'default_style': kpi.default_css_style,
                 'column': kpi.column,
@@ -1048,8 +1049,11 @@ class MisReportInstance(models.Model):
                 header_column['kpi_name'] = columns_header[column] and \
                     columns_header[column].description or ''
                 if columns_header[column]:
-                    content.remove(
-                        rows_by_kpi_name[columns_header[column].name])
+                    try:
+                        content.remove(
+                            rows_by_kpi_name[columns_header[column].name])
+                    except:
+                        pass
                 result.append({
                     'header': [dict(header_column)],
                     'content': [
