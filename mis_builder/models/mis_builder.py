@@ -508,6 +508,7 @@ class MisReport(models.Model):
 
                                     # Recursively compute all of the
                                     # inherit_report_id KPIs
+                                    # TODO: Recompute only within period_id
                                     inherit_subreport_vals_res = \
                                         report_instance_id._compute(
                                             report_id=inherit_report_id
@@ -520,16 +521,28 @@ class MisReport(models.Model):
                                     for kpi_col in content:
                                         # Fill the inherit_subreport_vals DICT
                                         # with each of its KPI's informations
+
+                                        kpi_unique_name = \
+                                            kpi_col.get('kpi_unique_name')
+
+                                        kpi_unique_col = {}
+                                        for col in kpi_col.get('cols'):
+                                            if (col.get('period_id')
+                                                    == period_id):
+                                                kpi_unique_col = col
+                                                break
+
                                         inherit_subreport_vals.get(
                                             inherit_report_id.code)[
-                                            kpi_col.get('kpi_unique_name')] = \
-                                            kpi_col.get('cols')[0]
+                                            kpi_unique_name] = \
+                                            kpi_unique_col
+                                        
                                         # Then fill the localdict with the KPI
                                         # val, using the underscore notation
                                         localdict[
                                             inherit_report_id.code + '_' +
-                                            kpi_col.get('kpi_unique_name')] = \
-                                            kpi_col.get('cols')[0].get('val')
+                                            kpi_unique_name] = \
+                                            kpi_unique_col.get('val')
 
                     kpi_val = safe_eval(kpi_eval_expression, localdict)
                     localdict[kpi.name] = kpi_val
