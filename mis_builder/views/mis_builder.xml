@@ -46,12 +46,13 @@
                         </field>
                     </group>
                     <group string="KPI's">
-                        <field name="kpi_ids" nolabel="1" colspan="2">
+                        <field name="kpi_ids" nolabel="1" colspan="2" widget="handle">
                             <tree string="KPI's" editable="bottom">
                                 <field name="sequence" widget="handle"/>
                                 <field name="description"/>
                                 <field name="name"/>
-                                <field name="column"/>
+                                <field name="column_break"/>
+                                <field name="column_title" attrs="{'invisible': [('column_break', '=', False)]}"/>
                                 <field name="expression"/>
                                 <field name="type"/>
                                 <field name="dp" attrs="{'invisible': [('type', '=', 'str')]}"/>
@@ -105,7 +106,8 @@
                         <field name="sequence" widget="handle"/>
                         <field name="description"/>
                         <field name="name"/>
-                        <field name="column"/>
+                        <field name="column_break"/>
+                        <field name="column_title" attrs="{'invisible': [('column_break', '=', False)]}"/>
                         <field name="expression"/>
                         <field name="type"/>
                         <field name="dp"/>
@@ -128,7 +130,8 @@
                     <field name="sequence" widget="handle"/>
                     <field name="description"/>
                     <field name="name"/>
-                    <field name="column"/>
+                    <field name="column_break"/>
+                    <field name="column_title" attrs="{'invisible': [('column_break', '=', False)]}"/>
                     <field name="type"/>
                     <field name="dp"/>
                     <field name="divider"/>
