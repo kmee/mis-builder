@@ -198,6 +198,16 @@ msgid "Description"
 msgstr "Descrição"
 
 #. module: mis_builder
+#: field:mis.report.kpi,column_break:0
+msgid "Column Break?"
+msgstr "Início de Coluna"
+
+#. module: mis_builder
+#: field:mis.report.kpi,column_title:0
+msgid "Column Title?"
+msgstr "Título de Coluna"
+
+#. module: mis_builder
 #: code:addons/mis_builder/models/mis_builder.py:98
 #: selection:mis.report.kpi,compare_method:0
 #, python-format
