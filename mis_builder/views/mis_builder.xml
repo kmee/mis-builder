@@ -46,24 +46,7 @@
                         </field>
                     </group>
                     <group string="KPI's">
-                        <field name="kpi_ids" nolabel="1" colspan="2" widget="handle">
-                            <tree string="KPI's" editable="bottom">
-                                <field name="sequence" widget="handle"/>
-                                <field name="description"/>
-                                <field name="name"/>
-                                <field name="column_break"/>
-                                <field name="column_title" attrs="{'invisible': [('column_break', '=', False)]}"/>
-                                <field name="expression"/>
-                                <field name="type"/>
-                                <field name="dp" attrs="{'invisible': [('type', '=', 'str')]}"/>
-                                <field name="divider" attrs="{'invisible': [('type', '=', 'str')]}"/>
-                                <field name="prefix"/>
-                                <field name="suffix"/>
-                                <field name="compare_method" attrs="{'invisible': [('type', '=', 'str')]}"/>
-                                <field name="default_css_style"/>
-                                <field name="css_style"/>
-                            </tree>
-                        </field>
+                        <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
                     </group>
                     <group col="2" string="Legend (for kpi expressions)">
                         <group>
