@@ -48,6 +48,9 @@
                     <group string="KPI's">
                         <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
                     </group>
+                    <group string="Periods" attrs="{'invisible': [('matrix', '=', False)]}">
+                        <field name="period_ids" nolabel="1" colspan="2" widget="handle" context="{'default_report_id': active_id}"/>
+                    </group>
                     <group col="2" string="Legend (for kpi expressions)">
                         <group>
                             <label colspan="2" string="Expressions are of the form &lt;field&gt;&lt;mode&gt;[accounts][domain]"/>
@@ -79,6 +82,35 @@
             </field>
         </record>
 
+        <record model="ir.ui.view" id="mis_report_period_form_view">
+            <field name="name">mis.report.period.form</field>
+            <field name="model">mis.report.period</field>
+            <field name="arch" type="xml">
+                <form name="MIS report KPI">
+                    <group>
+                        <field name="report_id" invisible="True"/>
+                        <field name="sequence" widget="handle" invisible="True"/>
+                        <field name="type"/>
+                        <field name="offset"/>
+                        <field name="duration"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="mis_report_period_tree_view">
+            <field name="name">mis.report.period.tree</field>
+            <field name="model">mis.report.period</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="report_id" invisible="True"/>
+                    <field name="sequence" widget="handle"/>
+                    <field name="type"/>
+                    <field name="offset"/>
+                    <field name="duration"/>
+                </tree>
+            </field>
+        </record>
         <record model="ir.ui.view" id="mis_report_kpi_form_view">
             <field name="name">mis.report.kpi.form</field>
             <field name="model">mis.report.kpi</field>
