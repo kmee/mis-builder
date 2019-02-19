@@ -264,7 +264,6 @@
             <field name="priority" eval="16"/>
             <field name="arch" type="xml">
                 <form string="MIS Report Instance" version="7.0">
-                <sheet>
                     <div class="oe_title">
                         <div class="oe_edit_only">
                             <label for="name"/>
@@ -314,7 +313,6 @@
 			    </field>
 			</group>
                     </group>
-                </sheet>
                 </form>
             </field>
         </record>
