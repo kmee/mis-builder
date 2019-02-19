@@ -77,6 +77,7 @@ class MisReportKpi(models.Model):
                                   default=False)
     column_title = fields.Boolean(string='Column Title?',
                                   default=False)
+    invisible = fields.Boolean(string='Invisible?')
     expression = fields.Char(required=True,
                              string='Expression')
     default_css_style = fields.Char(string='Default CSS style')
@@ -1095,7 +1096,7 @@ class MisReportInstance(models.Model):
                 'cols': [],
                 'default_style': kpi.default_css_style,
                 'column': column,
-                'column_title': kpi.column_title,
+                'invisible': kpi.column_title or kpi.invisible,
             }
             content.append(rows_by_kpi_name[kpi.name])
 
@@ -1155,7 +1156,7 @@ class MisReportInstance(models.Model):
                 'header': [header[column]],
                 'content': [
                     row for row in content
-                    if row['column'] == column and not row['column_title']],
+                    if row['column'] == column and not row['invisible']],
             })
 
         if report_id.matrix:
