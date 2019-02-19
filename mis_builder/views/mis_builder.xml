@@ -51,6 +51,9 @@
                     <group string="Periods" attrs="{'invisible': [('matrix', '=', False)]}">
                         <field name="period_ids" nolabel="1" colspan="2" widget="handle" context="{'default_report_id': active_id}"/>
                     </group>
+                    <group string="Events" attrs="{'invisible': [('matrix', '=', False)]}">
+                        <field name="event_ids" nolabel="1" colspan="2" widget="handle" context="{'default_report_id': active_id}"/>
+                    </group>
                     <group col="2" string="Legend (for kpi expressions)">
                         <group>
                             <label colspan="2" string="Expressions are of the form &lt;field&gt;&lt;mode&gt;[accounts][domain]"/>
@@ -93,6 +96,7 @@
                         <field name="type"/>
                         <field name="offset"/>
                         <field name="duration"/>
+                        <field name="event_ids" readonly="True"/>
                     </group>
                 </form>
             </field>
@@ -108,9 +112,47 @@
                     <field name="type"/>
                     <field name="offset"/>
                     <field name="duration"/>
+                    <field name="event_ids" widget="many2many_tags"/>
                 </tree>
             </field>
         </record>
+
+        <record model="ir.ui.view" id="mis_report_event_form_view">
+            <field name="name">mis.report.event.form</field>
+            <field name="model">mis.report.event</field>
+            <field name="arch" type="xml">
+                <form name="MIS report KPI">
+                    <group>
+                        <field name="sequence" widget="handle"/>
+                        <field name="report_id" invisible="True"/>
+                        <field name="period_id" domain="[('report_id', '=', report_id)]"/>
+                        <field name="name"/>
+                        <field name="type"/>
+                        <field name="debit_kpi_ids" widget="many2many_tags" domain="[('report_id', '=', report_id)]"/>
+                        <field name="credit_kpi_ids" widget="many2many_tags" domain="[('report_id', '=', report_id)]"/>
+                        <field name="style_id"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="mis_report_event_tree_view">
+            <field name="name">mis.report.event.tree</field>
+            <field name="model">mis.report.event</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sequence" widget="handle"/>
+                    <field name="report_id" invisible="True"/>
+                    <field name="period_id"/>
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="debit_kpi_ids" widget="many2many_tags"/>
+                    <field name="credit_kpi_ids" widget="many2many_tags"/>
+                    <field name="style_id"/>
+                </tree>
+            </field>
+        </record>
+
         <record model="ir.ui.view" id="mis_report_kpi_form_view">
             <field name="name">mis.report.kpi.form</field>
             <field name="model">mis.report.kpi</field>

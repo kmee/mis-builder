@@ -295,6 +295,9 @@ class MisReport(models.Model):
     period_ids = fields.One2many('mis.report.period', 'report_id',
                                  string='Lines',
                                  copy=True)
+    event_ids = fields.One2many('mis.report.event', 'report_id',
+                                string='Events',
+                                copy=True)
     code = fields.Char(size=32, string='Code', translate=True)
 
     @api.onchange('name')
@@ -639,6 +642,10 @@ class MisReportPeriod(models.Model):
                               help='Number of periods',
                               default=1)
     sequence = fields.Integer(string='Sequence', default=1)
+    event_ids = fields.One2many('mis.report.event', 'period_id',
+                                string='Events',
+                                readonly=False,
+                                copy=True)
 
     _sql_constraints = [
         ('duration', 'CHECK (duration>0)',
@@ -646,6 +653,44 @@ class MisReportPeriod(models.Model):
         ('name_unique', 'unique(name, report_id)',
          'Period template name should be unique by report template'),
     ]
+
+
+class MisReportEvent(models.Model):
+    _name = 'mis.report.event'
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        ondelete='cascade',
+        string='Period'
+    )
+    name = fields.Char(size=32, required=True,
+                       string='Description', translate=True)
+    type = fields.Selection(
+        selection=[
+            ('modificativo', 'Modificativo'),
+            ('permutativo', 'Permutativo'),
+            ('saldo', 'Saldo'),
+        ]
+    )
+    debit_kpi_ids = fields.Many2many(
+        comodel_name='mis.report.kpi',
+        relation='event_kpi_debit',
+    )
+    credit_kpi_ids = fields.Many2many(
+        comodel_name='mis.report.kpi',
+        relation='event_kpi_credit',
+    )
+    sequence = fields.Integer(string='Sequence', default=1)
+
+    style_id = fields.Many2one(
+        comodel_name='mis.report.style',
+        string='Estilo',
+    )
 
 
 class MisReportInstancePeriod(models.Model):
