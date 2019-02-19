@@ -295,6 +295,9 @@ class MisReport(models.Model):
     kpi_ids = fields.One2many('mis.report.kpi', 'report_id',
                               string='KPI\'s',
                               copy=True)
+    period_ids = fields.One2many('mis.report.period', 'report_id',
+                                 string='Lines',
+                                 copy=True)
     code = fields.Char(size=32, string='Code', translate=True)
 
     @api.onchange('name')
@@ -612,6 +615,40 @@ class MisReport(models.Model):
             recompute_queue = self.env['mis.report.kpi']
 
         return res
+
+
+class MisReportPeriod(models.Model):
+    _name = 'mis.report.period'
+
+    _order = 'sequence, id'
+
+    _rec_name = 'sequence'
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    type = fields.Selection([('d', _('Day')),
+                             ('w', _('Week')),
+                             ('fp', _('Fiscal Period')),
+                             ],
+                            required=True,
+                            string='Period type')
+    offset = fields.Integer(string='Offset',
+                            help='Offset from current period',
+                            default=-1)
+    duration = fields.Integer(string='Duration',
+                              help='Number of periods',
+                              default=1)
+    sequence = fields.Integer(string='Sequence', default=1)
+
+    _sql_constraints = [
+        ('duration', 'CHECK (duration>0)',
+         'Wrong duration, it must be positive!'),
+        ('name_unique', 'unique(name, report_id)',
+         'Period template name should be unique by report template'),
+    ]
 
 
 class MisReportInstancePeriod(models.Model):
