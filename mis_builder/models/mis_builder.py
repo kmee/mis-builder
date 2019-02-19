@@ -791,6 +791,11 @@ class MisReportInstancePeriod(models.Model):
         string='Factor',
         help='Factor to use to normalize the period (used in comparison',
         default=1)
+    event_id = fields.Many2one(
+        comodel_name='mis.report.event',
+        string='Event',
+        copy=True
+    )
 
     _order = 'sequence, id'
 
@@ -973,6 +978,24 @@ class MisReportInstance(models.Model):
         date_format = self.env['res.lang'].browse(lang_id).date_format
         return datetime.datetime.strftime(
             fields.Date.from_string(date), date_format)
+
+    @api.onchange('report_id')
+    def _onchange_report_id(self):
+        if not self.report_id:
+            return {}
+        if not self.report_id.period_ids:
+            return {}
+        self.period_ids = [
+            [0, 0, {
+                'name': event.name,
+                'type': event.period_id.type,
+                'offset': event.period_id.offset,
+                'duration': event.period_id.duration,
+                'sequence': event.period_id.sequence,
+                'event_id': event.id,
+                'incluir_lancamentos_de_fechamento':
+                    self.incluir_lancamentos_de_fechamento
+            }] for event in self.report_id.period_ids.mapped('event_ids')]
 
     @api.multi
     def preview(self):
