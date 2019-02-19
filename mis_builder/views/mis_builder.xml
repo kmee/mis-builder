@@ -30,6 +30,7 @@
                         <field name="name"/>
                         <field name="code"/>
                         <field name="description"/>
+                        <field name="matrix"/>
                     </group>
                     <group string="Queries">
                         <field name="query_ids" nolabel="1" colspan="2">

@@ -291,6 +291,7 @@ class MisReport(models.Model):
     kpi_ids = fields.One2many('mis.report.kpi', 'report_id',
                               string='KPI\'s',
                               copy=True)
+    matrix = fields.Boolean(string='Matrix report?')
     code = fields.Char(size=32, string='Code', translate=True)
 
     @api.onchange('name')
@@ -1074,4 +1075,18 @@ class MisReportInstance(models.Model):
                     row for row in content
                     if row['column'] == column and not row['column_title']],
             })
+
+        if report_id.matrix:
+            for res in result:
+                lines = res['header'][0]['cols']
+                res['header'][0]['cols'] = [
+                    dict(name=col['kpi_name'], date='')
+                    for col in res['content']]
+                res['content'] = [
+                    dict(kpi_name=line['name'], cols=[
+                        col['cols'][lines.index(line)]
+                        for col in res['content']],
+                         default_style=res['content'][0]['default_style'])
+                    for line in lines]
+
         return result
