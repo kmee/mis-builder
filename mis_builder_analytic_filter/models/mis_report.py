@@ -25,20 +25,20 @@ class MisReportInstancePeriod(models.Model):
     _inherit = 'mis.report.instance.period'
 
     @api.multi
-    def _get_additional_move_line_filter(self):
+    def _get_additional_move_line_filter(self, aep):
         self.ensure_one()
         res = super(MisReportInstancePeriod, self).\
-            _get_additional_move_line_filter()
+            _get_additional_move_line_filter(aep)
         val = self.env.context.get('account_analytic_id')
         if val:
             res.append(('analytic_account_id', 'child_of', val))
         return res
 
     @api.multi
-    def _get_additional_query_filter(self, query):
+    def _get_additional_query_filter(self, query, aep):
         self.ensure_one()
         res = super(MisReportInstancePeriod, self).\
-            _get_additional_move_line_filter()
+            _get_additional_move_line_filter(aep)
         # TODO filter on analytic account if query.model_id has
         #      a field of type account.analytic.account
         return res

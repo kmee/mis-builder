@@ -326,7 +326,7 @@ class MisReport(models.Model):
 
     @api.multi
     def _fetch_queries(self, date_from, date_to,
-                       get_additional_query_filter=None):
+                       get_additional_query_filter=None, aep=None):
         self.ensure_one()
         res = {}
         for query in self.query_ids:
@@ -343,7 +343,7 @@ class MisReport(models.Model):
             domain = query.domain and \
                 safe_eval(query.domain, eval_context) or []
             if get_additional_query_filter:
-                domain.extend(get_additional_query_filter(query))
+                domain.extend(get_additional_query_filter(query, aep))
             if query.date_field.ttype == 'date':
                 domain.extend([(query.date_field.name, '>=', date_from),
                                (query.date_field.name, '<=', date_to)])
@@ -453,11 +453,11 @@ class MisReport(models.Model):
         }
 
         localdict.update(self._fetch_queries(
-            date_from, date_to, get_additional_query_filter))
+            date_from, date_to, get_additional_query_filter, aep))
 
         additional_move_line_filter = None
         if get_additional_move_line_filter:
-            additional_move_line_filter = get_additional_move_line_filter()
+            additional_move_line_filter = get_additional_move_line_filter(aep)
         aep.do_queries(date_from, date_to,
                        period_from, period_to,
                        target_move,
@@ -809,7 +809,7 @@ class MisReportInstancePeriod(models.Model):
     ]
 
     @api.multi
-    def _get_additional_move_line_filter(self):
+    def _get_additional_move_line_filter(self, aep):
         """ Prepare a filter to apply on all move lines
 
         This filter is applied with a AND operator on all
@@ -820,10 +820,59 @@ class MisReportInstancePeriod(models.Model):
         Returns an Odoo domain expression (a python list)
         compatible with account.move.line."""
         self.ensure_one()
-        return []
+        domain = []
+
+        if not self.event_id or self.event_id.type == 'saldo':
+            return domain
+
+        if self.event_id.type == 'modificativo':
+            for expr in self.event_id.credit_kpi_ids.mapped(
+                    'expression'):
+                    domain += aep.get_aml_domain_for_expr(
+                        expr,
+                        self.date_from, self.date_to,
+                        self.period_from, self.period_to,
+                        self.report_instance_id.target_move)
+            return domain
+
+        accs_credit = []
+        for expr in self.event_id.credit_kpi_ids.mapped(
+                'expression'):
+            for mo in aep.ACC_RE.finditer(expr):
+                for code in aep._parse_match_object(mo)[2]:
+                    accs_credit += list(aep._account_ids_by_code[code])
+
+        domain_search = [('line_id.account_id', 'in', accs_credit)]
+
+        accs_debit = []
+        for expr in self.event_id.debit_kpi_ids.mapped(
+                'expression'):
+            for mo in aep.ACC_RE.finditer(expr):
+                for code in aep._parse_match_object(mo)[2]:
+                    accs_debit += list(aep._account_ids_by_code[code])
+
+        domain_search += [('line_id.account_id', 'in', accs_debit)]
+
+        moves = self.env['account.move'].search(domain_search)
+
+        move_lines = []
+        for move in moves:
+            for line_orig in move.line_id.filtered(
+                    lambda line: line.credit > 0.0 and
+                    line.account_id.id in accs_credit):
+                if self.event_id.type == 'modificativo':
+                    move_lines += line_orig.ids
+                    continue
+                line_dest = move.line_id.filtered(
+                    lambda line: line.debit == line_orig.credit and
+                    line.account_id.id in accs_debit)
+                if line_dest:
+                    move_lines += line_orig.ids + line_dest.ids
+
+        return domain + [('id', 'in', move_lines)]
 
     @api.multi
-    def _get_additional_query_filter(self, query):
+    def _get_additional_query_filter(self, query, aep):
         """ Prepare an additional filter to apply on the query
 
         This filter is combined to the query domain with a AND
@@ -848,7 +897,7 @@ class MisReportInstancePeriod(models.Model):
                 self.date_from, self.date_to,
                 self.period_from, self.period_to,
                 self.report_instance_id.target_move)
-            domain.extend(self._get_additional_move_line_filter())
+            domain.extend(self._get_additional_move_line_filter(aep))
             return {
                 'name': expr + ' - ' + self.name,
                 'domain': domain,
@@ -908,6 +957,7 @@ class MisReportInstancePeriod(models.Model):
     @api.multi
     def _compute(self, report_id, lang_id, aep):
         self.ensure_one()
+
         return report_id._compute(
             lang_id, aep,
             self.date_from, self.date_to,
