@@ -37,7 +37,7 @@ openerp.mis_builder = function(instance) {
         
         get_context: function() {
             var self = this;
-            context = {}
+            context = self.field_manager.ViewManager.ActionManager.inner_action.context;
             if (this.mis_report_instance_id){
                 context['active_ids'] = [this.mis_report_instance_id];
             }
@@ -77,8 +77,8 @@ openerp.mis_builder = function(instance) {
             });
         },
         generate_content: function() {
-            var self = this
-            context = new instance.web.CompoundContext(self.build_context(), self.get_context()|| {}) 
+            var self = this;
+            context = new instance.web.CompoundContext(self.build_context(), self.get_context()|| {});
             new instance.web.Model("mis.report.instance").call(
                 "compute", 
                 [self.mis_report_instance_id], 
@@ -103,6 +103,7 @@ openerp.mis_builder = function(instance) {
         },
         events: {
             "click a.mis_builder_drilldown": "drilldown",
+            "click a.mis_builder_sub_report": "sub_report",
         },
 
         drilldown: function(event) {
@@ -111,10 +112,28 @@ openerp.mis_builder = function(instance) {
             if (drilldown) {
                 var period_id = JSON.parse($(event.target).data("period-id"));
                 var val_c = JSON.parse($(event.target).data("expr"));
-                context = new instance.web.CompoundContext(self.build_context(), self.get_context()|| {}) 
+                context = new instance.web.CompoundContext(self.build_context(), self.get_context()|| {});
                 new instance.web.Model("mis.report.instance.period").call(
                     "drilldown",
                     [period_id, val_c],
+                    {'context': context}
+                ).then(function(result) {
+                    if (result) {
+                        self.do_action(result);
+                    }
+                });
+            }
+        },
+        sub_report: function(event) {
+            var self = this;
+            var sub_report_ids = $(event.target).data("sub-report-ids");
+            if (sub_report_ids) {
+                var period_id = JSON.parse($(event.target).data("period-id"));
+                var val_c = JSON.parse($(event.target).data("expr"));
+                context = new instance.web.CompoundContext(self.build_context(), self.get_context()|| {});
+                new instance.web.Model("mis.report.instance.period").call(
+                    "sub_report",
+                    [period_id, val_c, sub_report_ids],
                     {'context': context}
                 ).then(function(result) {
                     if (result) {
