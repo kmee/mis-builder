@@ -11,7 +11,7 @@ import traceback
 
 import pytz
 
-from openerp import api, fields, models, _
+from openerp import _, api, fields, models, exceptions
 from openerp.tools.safe_eval import safe_eval
 
 from .aep import AccountingExpressionProcessor as AEP
@@ -210,6 +210,10 @@ class MisReportKpi(models.Model):
         if divider_label == '1':
             divider_label = ''
         # format number following user language
+        if isinstance(value, str):
+            raise exceptions.Warning(_(
+                'Invalid KPI!\n '
+                'Name: {}\n Sequence: {} '.format(self.name, self.sequence)))
         value = round(value / float(divider or 1), dp) or 0
         value = self.env['res.lang'].browse(lang_id).format(
             '%%%s.%df' % (sign, dp),
