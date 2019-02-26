@@ -623,7 +623,9 @@ class MisReportPeriod(models.Model):
 
     _order = 'sequence, id'
 
-    _rec_name = 'sequence'
+    name = fields.Char(
+        string='Name',
+    )
 
     report_id = fields.Many2one(
         comodel_name='mis.report',
