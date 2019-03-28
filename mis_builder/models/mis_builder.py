@@ -1045,8 +1045,8 @@ class MisReportInstance(models.Model):
                 'duration': event.period_id.duration,
                 'sequence': event.period_id.sequence,
                 'event_id': event.id,
-                'incluir_lancamentos_de_fechamento':
-                    self.incluir_lancamentos_de_fechamento
+                # 'incluir_lancamentos_de_fechamento':
+                #     self.incluir_lancamentos_de_fechamento
             }] for event in self.report_id.period_ids.mapped('event_ids')]
 
     @api.multi
