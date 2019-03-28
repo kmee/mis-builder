@@ -660,6 +660,7 @@ class MisReportPeriod(models.Model):
 
 class MisReportEvent(models.Model):
     _name = 'mis.report.event'
+    _order = 'sequence'
 
     report_id = fields.Many2one(
         comodel_name='mis.report',
