@@ -31,28 +31,36 @@
                         <field name="code"/>
                         <field name="description"/>
                     </group>
-                    <group string="Queries">
-                        <field name="query_ids" nolabel="1" colspan="2">
-                            <tree string="Queries" editable="bottom">
-                                <field name="name"/>
-                                <field name="model_id"/>
-                                <field name="field_ids" domain="[('model_id', '=', model_id)]" widget="many2many_tags"/>
-                                <field name="field_names"/>
-                                <field name="aggregate"/>
-                                <field name="date_field" domain="[('model_id', '=', model_id), ('ttype', 'in', ('date', 'datetime'))]"/>
-                                <field name="domain"/>
-                            </tree>
-                        </field>
-                    </group>
-                    <group string="KPI's">
-                        <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
-                    </group>
-                    <group string="Periods" attrs="{'invisible': [('matrix', '=', False)]}">
-                        <field name="period_ids" nolabel="1" colspan="2" widget="handle" context="{'default_report_id': active_id}"/>
-                    </group>
+
+                    <notebook>
+                        <page string="Periods" attrs="{'invisible': [('matrix', '=', False)]}">
+                            <field name="period_ids" nolabel="1" colspan="2" widget="handle"
+                                   context="{'default_report_id': active_id}"/>
+                        </page>
+                        <page string="KPI's">
+                            <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
+                        </page>
+                        <page string="Queries">
+                            <field name="query_ids" nolabel="1" colspan="2">
+                                <tree string="Queries" editable="bottom">
+                                    <field name="name"/>
+                                    <field name="model_id"/>
+                                    <field name="field_ids" domain="[('model_id', '=', model_id)]"
+                                           widget="many2many_tags"/>
+                                    <field name="field_names"/>
+                                    <field name="aggregate"/>
+                                    <field name="date_field"
+                                           domain="[('model_id', '=', model_id), ('ttype', 'in', ('date', 'datetime'))]"/>
+                                    <field name="domain"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
                     <group col="2" string="Legend (for kpi expressions)">
                         <group>
-                            <label colspan="2" string="Expressions are of the form &lt;field&gt;&lt;mode&gt;[accounts][domain]"/>
+                            <label colspan="2"
+                                   string="Expressions are of the form &lt;field&gt;&lt;mode&gt;[accounts][domain]"/>
                             <label colspan="2" string="Possible values for 'field' can be:"/>
                             <group>
                                 <label colspan="2" string="* bal for balance (debit - credit)"/>
@@ -65,15 +73,19 @@
                                 <label colspan="2" string="* i: at the beginning of the period"/>
                                 <label colspan="2" string="* e: at the end of the period"/>
                             </group>
-                            <label colspan="2" string="'accounts' is a comma-separated list of account codes, possibly containing %% wildcards"/>
-                            <label colspan="2" string="'domain' is an optional filter on move lines (eg to filter on analytic accounts or journal)"/>
-                       </group>
-                       <group>
+                            <label colspan="2"
+                                   string="'accounts' is a comma-separated list of account codes, possibly containing %% wildcards"/>
+                            <label colspan="2"
+                                   string="'domain' is an optional filter on move lines (eg to filter on analytic accounts or journal)"/>
+                        </group>
+                        <group>
                             <label colspan="2" string="Examples"/>
                             <group>
-                                <label colspan="2" string="* bal[70]: variation of the balance of account 70 over the period (it is the same as balp[70]);"/>
+                                <label colspan="2"
+                                       string="* bal[70]: variation of the balance of account 70 over the period (it is the same as balp[70]);"/>
                                 <label colspan="2" string="* bali[70,60]: initial balance of accounts 70 and 60;"/>
-                                <label colspan="2" string="* bale[1%%]: balance of accounts starting with 1 at end of period."/>
+                                <label colspan="2"
+                                       string="* bale[1%%]: balance of accounts starting with 1 at end of period."/>
                             </group>
                         </group>
                     </group>
@@ -87,6 +99,7 @@
             <field name="arch" type="xml">
                 <form name="MIS report KPI">
                     <group>
+                        <field name="name"/>
                         <field name="report_id" invisible="True"/>
                         <field name="sequence" widget="handle" invisible="True"/>
                         <field name="type"/>
@@ -102,6 +115,7 @@
             <field name="model">mis.report.period</field>
             <field name="arch" type="xml">
                 <tree>
+                    <field name="name"/>
                     <field name="report_id" invisible="True"/>
                     <field name="sequence" widget="handle"/>
                     <field name="type"/>
@@ -219,7 +233,6 @@
             <field name="priority" eval="16"/>
             <field name="arch" type="xml">
                 <form string="MIS Report Instance" version="7.0">
-                <sheet>
                     <div class="oe_title">
                         <div class="oe_edit_only">
                             <label for="name"/>
@@ -268,7 +281,6 @@
 			    </field>
 			</group>
                     </group>
-                </sheet>
                 </form>
             </field>
         </record>
