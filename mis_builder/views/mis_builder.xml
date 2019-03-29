@@ -2,7 +2,7 @@
 <openerp>
     <data>
 
-       <template id="assets_backend" name="mis_builder" inherit_id="web.assets_backend">
+        <template id="assets_backend" name="mis_builder" inherit_id="web.assets_backend">
             <xpath expr="." position="inside">
                 <link rel="stylesheet" href="/mis_builder/static/src/css/custom.css"/>
                 <script type="text/javascript" src="/mis_builder/static/src/js/mis_builder.js"></script>
@@ -180,24 +180,25 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="mis_report_view_menu" parent="account.menu_account_reports" name="MIS Report Templates" action="mis_report_view_action" sequence="21"/>
-        
+        <menuitem id="mis_report_view_menu" parent="account.menu_account_reports" name="MIS Report Templates"
+                  action="mis_report_view_action" sequence="21"/>
+
         <record id="xls_export" model="ir.actions.report.xml">
-          <field name="name">MIS report instance XLS report</field>
-          <field name="model">mis.report.instance</field>
-          <field name="type">ir.actions.report.xml</field>
-          <field name="report_name">mis.report.instance.xls</field>
-          <field name="report_type">xls</field>
-          <field name="auto" eval="False"/>
+            <field name="name">MIS report instance XLS report</field>
+            <field name="model">mis.report.instance</field>
+            <field name="type">ir.actions.report.xml</field>
+            <field name="report_name">mis.report.instance.xls</field>
+            <field name="report_type">xls</field>
+            <field name="auto" eval="False"/>
         </record>
-    
+
         <record id="qweb_pdf_export" model="ir.actions.report.xml">
-          <field name="name">MIS report instance QWEB PDF report</field>
-          <field name="model">mis.report.instance</field>
-          <field name="type">ir.actions.report.xml</field>
-          <field name="report_name">mis_builder.report_mis_report_instance</field>
-          <field name="report_type">qweb-pdf</field>
-          <field name="auto" eval="False"/>
+            <field name="name">MIS report instance QWEB PDF report</field>
+            <field name="model">mis.report.instance</field>
+            <field name="type">ir.actions.report.xml</field>
+            <field name="report_name">mis_builder.report_mis_report_instance</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="auto" eval="False"/>
         </record>
 
         <record model="ir.ui.view" id="mis_report_instance_result_view_form">
@@ -222,7 +223,7 @@
                     <field name="target_move"/>
                     <field name="pivot_date"/>
                     <field name="company_id"/>
-                    <button name="display_settings" type="object" icon="gtk-execute" />
+                    <button name="display_settings" type="object" icon="gtk-execute"/>
                 </tree>
             </field>
         </record>
@@ -241,45 +242,48 @@
                             <field name="name" placeholder="Name"/>
                         </h1>
                     </div>
-                    <div class="oe_right oe_button_box" name="buttons"> 
-                        <button type="object" name="preview" string="Preview" icon="gtk-print-preview" />
-                        <button type="object" name="print_pdf" string="Print" icon="gtk-print" />
-                        <button type="object" name="export_xls" string="Export" icon="gtk-go-down" />
-                        <button type="action" name="%(mis_report_instance_add_to_dashboard_action)d" string="Add to dashboard" icon="gtk-add" />
+                    <div class="oe_right oe_button_box" name="buttons">
+                        <button type="object" name="preview" string="Preview" icon="gtk-print-preview"/>
+                        <button type="object" name="print_pdf" string="Print" icon="gtk-print"/>
+                        <button type="object" name="export_xls" string="Export" icon="gtk-go-down"/>
+                        <button type="action" name="%(mis_report_instance_add_to_dashboard_action)d"
+                                string="Add to dashboard" icon="gtk-add"/>
                     </div>
                     <group col="4">
                         <field name="report_id" colspan="4"/>
                         <field name="description"/>
-                        <field name="landscape_pdf" />
+                        <field name="landscape_pdf"/>
                         <field name="root_account"/>
                         <field name="company_id" groups="base.group_multi_company"/>
                         <field name="target_move"/>
-		    </group>
-		    <group col="4" string="Periods">
-			<group colspan="2">
-			    <field name="date"/>
-			</group>
-			<newline/>
-			<group>
-			    <field name="period_ids" colspan="4" nolabel="1">
-				<tree string="KPI's" editable="bottom" colors="red:valid==False">
-				    <field name="sequence" widget="handle"/>
-				    <field name="name"/>
-				    <field name="type"/>
-				    <field name="offset"/>
-				    <field name="duration"/>
-				    <field name="normalize_factor"/>
-				    <field name="date_from"/>
-				    <field name="date_to"/>
-				    <field name="period_from"/>
-				    <field name="period_to"/>
-				    <field name="valid" invisible="1"/>
-				    <field name="report_instance_id" invisible="1"/>
-				    <field name="id" invisible="1"/>
-				    <field name="comparison_column_ids" domain="[('report_instance_id', '=', report_instance_id), ('id', '!=', id)]" widget="many2many_tags"/>
-				</tree>
-			    </field>
-			</group>
+                    </group>
+                    <group col="4" string="Periods">
+                        <group colspan="2">
+                            <field name="date"/>
+                        </group>
+                        <newline/>
+                        <group>
+                            <field name="period_ids" colspan="4" nolabel="1" widget="handle">
+                                <tree string="KPI's" editable="bottom" colors="red:valid==False">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="offset"/>
+                                    <field name="duration"/>
+                                    <field name="normalize_factor"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="period_from"/>
+                                    <field name="period_to"/>
+                                    <field name="valid" invisible="1"/>
+                                    <field name="report_instance_id" invisible="1"/>
+                                    <field name="id" invisible="1"/>
+                                    <field name="comparison_column_ids"
+                                           domain="[('report_instance_id', '=', report_instance_id), ('id', '!=', id)]"
+                                           widget="many2many_tags"/>
+                                </tree>
+                            </field>
+                        </group>
                     </group>
                 </form>
             </field>
@@ -293,7 +297,8 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem id="mis_report_instance_view_menu" parent="account.menu_finance_reports" name="MIS Reports" action="mis_report_instance_view_action" sequence="101"/>
+        <menuitem id="mis_report_instance_view_menu" parent="account.menu_finance_reports" name="MIS Reports"
+                  action="mis_report_instance_view_action" sequence="101"/>
 
     </data>
 </openerp>

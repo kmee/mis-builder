@@ -295,9 +295,18 @@ class MisReport(models.Model):
     kpi_ids = fields.One2many('mis.report.kpi', 'report_id',
                               string='KPI\'s',
                               copy=True)
+    manual_position = fields.Boolean(string='Manual position?')
     period_ids = fields.One2many('mis.report.period', 'report_id',
                                  string='Lines',
                                  copy=True)
+    position_ids = fields.One2many(
+        comodel_name='mis.report.position',
+        inverse_name='report_id',
+        string='Position',
+        copy=True
+    )
+
+
     code = fields.Char(size=32, string='Code', translate=True)
 
     @api.onchange('name')
