@@ -293,12 +293,21 @@ class MisReport(models.Model):
                               string='KPI\'s',
                               copy=True)
     matrix = fields.Boolean(string='Matrix report?')
+    manual_position = fields.Boolean(string='Manual position?')
     period_ids = fields.One2many('mis.report.period', 'report_id',
                                  string='Lines',
                                  copy=True)
     event_ids = fields.One2many('mis.report.event', 'report_id',
                                 string='Events',
                                 copy=True)
+    position_ids = fields.One2many(
+        comodel_name='mis.report.position',
+        inverse_name='report_id',
+        string='Position',
+        copy=True
+    )
+
+
     code = fields.Char(size=32, string='Code', translate=True)
 
     @api.onchange('name')
@@ -616,6 +625,29 @@ class MisReport(models.Model):
             recompute_queue = self.env['mis.report.kpi']
 
         return res
+
+
+class MisReportPosition(models.Model):
+
+    _name = 'mis.report.position'
+    _order = 'report_id, collumn, line'
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    collumn = fields.Integer()
+    line = fields.Integer()
+    period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        ondelete='cascade',
+        string='Period'
+    )
+    kpi_id = fields.Many2one(
+        comodel_name='mis.report.kpi',
+    )
+    name = fields.Char()
 
 
 class MisReportPeriod(models.Model):

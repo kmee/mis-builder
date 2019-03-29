@@ -31,6 +31,7 @@
                         <field name="code"/>
                         <field name="description"/>
                         <field name="matrix"/>
+                        <field name="manual_position"/>
                     </group>
 
                     <notebook>
@@ -40,6 +41,10 @@
                         </page>
                         <page string="KPI's">
                             <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
+                        </page>
+                        <page string="Position" attrs="{'invisible': [('manual_position', '=', False)]}">
+                            <field name="position_ids" nolabel="1" colspan="2"
+                                   context="{'default_report_id': active_id}"/>
                         </page>
                         <page string="Events" attrs="{'invisible': [('matrix', '=', False)]}">
                             <field name="event_ids" nolabel="1" colspan="2" widget="handle"
@@ -167,6 +172,40 @@
                 </tree>
             </field>
         </record>
+        
+        
+         <record model="ir.ui.view" id="mis_report_position_form_view">
+            <field name="name">mis.report.position.form</field>
+            <field name="model">mis.report.position</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="report_id" invisible="True"/>
+                        <field name="collumn"/>
+                        <field name="line"/>
+                        <field name="period_id" domain="[('report_id', '=', report_id)]"/>
+                        <field name="kpi_id"/>
+                        <field name="name"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="mis_report_position_tree_view">
+            <field name="name">mis.report.position.tree</field>
+            <field name="model">mis.report.position</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="report_id" invisible="True"/>
+                    <field name="collumn"/>
+                    <field name="line"/>
+                    <field name="period_id" domain="[('report_id', '=', report_id)]"/>
+                    <field name="kpi_id"/>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
 
         <record model="ir.ui.view" id="mis_report_kpi_form_view">
             <field name="name">mis.report.kpi.form</field>
