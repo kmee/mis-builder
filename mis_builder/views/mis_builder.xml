@@ -35,7 +35,7 @@
                     </group>
 
                     <notebook>
-                        <page string="Periods" attrs="{'invisible': [('matrix', '=', False)]}">
+                        <page string="Periods" attrs="{'invisible': [('manual_position', '=', False)]}">
                             <field name="period_ids" nolabel="1" colspan="2" widget="handle"
                                    context="{'default_report_id': active_id}"/>
                         </page>
@@ -46,10 +46,10 @@
                             <field name="position_ids" nolabel="1" colspan="2"
                                    context="{'default_report_id': active_id}"/>
                         </page>
-                        <page string="Events" attrs="{'invisible': [('matrix', '=', False)]}">
-                            <field name="event_ids" nolabel="1" colspan="2" widget="handle"
-                                   context="{'default_report_id': active_id}"/>
-                        </page>
+<!--                        <page string="Events" attrs="{'invisible': [('matrix', '=', False)]}">-->
+<!--                            <field name="event_ids" nolabel="1" colspan="2" widget="handle"-->
+<!--                                   context="{'default_report_id': active_id}"/>-->
+<!--                        </page>-->
                         <page string="Queries">
                             <field name="query_ids" nolabel="1" colspan="2">
                                 <tree string="Queries" editable="bottom">
@@ -115,7 +115,7 @@
                         <field name="type"/>
                         <field name="offset"/>
                         <field name="duration"/>
-                        <field name="event_ids" readonly="True" invisible="True"/>
+<!--                        <field name="event_ids" readonly="True" invisible="True"/>-->
                     </group>
                 </form>
             </field>
@@ -132,7 +132,7 @@
                     <field name="type"/>
                     <field name="offset"/>
                     <field name="duration"/>
-                    <field name="event_ids" widget="many2many_tags" invisible="True"/>
+<!--                    <field name="event_ids" widget="many2many_tags" invisible="True"/>-->
                 </tree>
             </field>
         </record>
@@ -184,7 +184,7 @@
                         <field name="collumn"/>
                         <field name="line"/>
                         <field name="period_id" domain="[('report_id', '=', report_id)]"/>
-                        <field name="kpi_id"/>
+                        <field name="kpi_id" domain="[('report_id', '=', report_id)]"/>
                         <field name="name"/>
                     </group>
                 </form>
@@ -361,7 +361,8 @@
                                     <field name="period_from"/>
                                     <field name="period_to"/>
                                     <field name="valid" invisible="1"/>
-                                    <field name="event_id" invisible="1"/>
+                                    <field name="template_period_id" invisible="1"/>
+<!--                                    <field name="event_id" invisible="1"/>-->
                                     <field name="report_instance_id" invisible="1"/>
                                     <field name="id" invisible="1"/>
                                     <field name="comparison_column_ids"
