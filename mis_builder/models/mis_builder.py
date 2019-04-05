@@ -586,7 +586,7 @@ class MisReport(models.Model):
                     if kpi.css_style:
                         kpi_style = safe_eval(kpi.css_style, localdict)
                 except:
-                    _logger.warning("error evaluating css stype expression %s",
+                    _logger.warning("error evaluating css style expression %s",
                                     kpi.css_style, exc_info=True)
                     kpi_style = None
 
@@ -602,6 +602,7 @@ class MisReport(models.Model):
                     'prefix': kpi.prefix,
                     'suffix': kpi.suffix,
                     'dp': kpi.dp,
+                    'kpi_id': kpi.id,
                     'is_percentage': kpi.type == 'pct',
                     'period_id': period_id,
                     'expr': kpi.expression,
@@ -624,6 +625,36 @@ class MisReport(models.Model):
             recompute_queue = self.env['mis.report.kpi']
 
         return res
+
+
+class MisReportPosition(models.Model):
+
+    _name = 'mis.report.position'
+    _order = 'report_id, collumn, line'
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    collumn = fields.Integer()
+    line = fields.Integer()
+    period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        ondelete='cascade',
+        string='Period'
+    )
+    kpi_id = fields.Many2one(
+        comodel_name='mis.report.kpi',
+    )
+    name = fields.Char()
+
+    @api.constrains('line', 'collumn')
+    def _constraints_line_col(self):
+        if self.line < 0:
+            raise UserWarning('Line value can\'t be negative')
+        if self.collumn < 0:
+            raise UserWarning('Column value can\'t be negative')
 
 
 class MisReportPeriod(models.Model):
@@ -759,6 +790,11 @@ class MisReportInstancePeriod(models.Model):
         string='Factor',
         help='Factor to use to normalize the period (used in comparison',
         default=1)
+    template_period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        string='Template Period',
+        copy=True
+    )
 
     _order = 'sequence, id'
 
@@ -951,15 +987,13 @@ class MisReportInstance(models.Model):
             return {}
         self.period_ids = [
             [0, 0, {
-                'name': event.name,
-                'type': event.period_id.type,
-                'offset': event.period_id.offset,
-                'duration': event.period_id.duration,
-                'sequence': event.period_id.sequence,
-                'event_id': event.id,
-                # 'incluir_lancamentos_de_fechamento':
-                #     self.incluir_lancamentos_de_fechamento
-            }] for event in self.report_id.period_ids.mapped('event_ids')]
+                'name': period_id.name,
+                'type': period_id.type,
+                'offset': period_id.offset,
+                'duration': period_id.duration,
+                'sequence': period_id.sequence,
+                'template_period_id': period_id.id,
+            }] for period_id in self.report_id.period_ids]
 
     @api.multi
     def preview(self):
@@ -1145,4 +1179,70 @@ class MisReportInstance(models.Model):
                     row for row in content
                     if row['column'] == column and not row['column_title']],
             })
+
+
+        if report_id.manual_position:
+            row_list = []
+            collumn_size = max(report_id.position_ids.mapped('collumn'))
+            row_size = max(report_id.position_ids.mapped('line'))
+
+            # incia matriz auxiliar
+            for col in range(0, collumn_size+1):
+                row_list.append([{} for i in range(0, row_size+1)])
+
+            # preenche os cabeçalhos de colunas
+            for header_position in report_id.position_ids.filtered(
+                    lambda x: x.line == 0 and x.collumn > 0 and
+                              x.collumn <= collumn_size):
+                for res in result:
+                    # res['header'][0]['cols'][header_position.collumn - 1]\
+                    #     ['name'] = header_position.name
+                    row_list[header_position.collumn][header_position.line] = header_position.name
+
+
+            # preenche cabeçalhos de linhas
+            for line_position in report_id.position_ids.filtered(
+                        lambda x: x.collumn == 0 and x.line > 0 and
+                                  x.line <= row_size):
+                for res in result:
+                    # res['content'][line_position.line - 1]['kpi_name'] = \
+                    #     line_position.name
+                    row_list[line_position.collumn][
+                        line_position.line] = line_position.name
+
+
+            for position in report_id.position_ids.filtered(
+                    lambda x: x.line > 0 and x.collumn > 0):
+                row_pos = position.line
+                col_pos = position.collumn
+                for res in result:
+                    for row in res['content']:
+                        for cell in row['cols']:
+                            if not isinstance(cell, dict):
+                                continue
+                            instance_period = self.env['mis.report.instance.period'].browse(cell.get('period_id'))
+                            kpi_compare = (cell.get('kpi_id') == position.kpi_id.id)
+                            period_compare = (instance_period.template_period_id == position.period_id)
+                            if kpi_compare and period_compare:
+                                row_list[col_pos][row_pos] = cell
+
+                    # recria matriz com tamanho correto
+                    res['header'][0]['cols'] = []
+                    for col in range(1, collumn_size+1):
+                        res['header'][0]['cols'].append({
+                            'name': row_list[col][0] or 'SEM TITULO',
+                            'date': ''
+                        })
+
+                    for cont in res['content']:
+                        cont['cols'] = []
+                        for line in range(0, row_size):
+                            cont['cols'].append({})
+
+                    # preenche a matriz com os valores
+                    for n_line in range(0, len(row_list)-1):
+                        for n_col in range(0, len(row_list[n_line])-1):
+                            res['content'][n_line]['cols'][n_col] = row_list[n_line+1][n_col+1]
+                            res['content'][n_line]['kpi_name'] = row_list[0][n_line-1] or 'SEM TITULO DE LINHA'
+
         return result
