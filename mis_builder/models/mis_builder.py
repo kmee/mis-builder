@@ -1186,31 +1186,25 @@ class MisReportInstance(models.Model):
             collumn_size = max(report_id.position_ids.mapped('collumn'))
             row_size = max(report_id.position_ids.mapped('line'))
 
-            # incia matriz auxiliar
+            # incia matriz auxiliar no formato [coluna][linha]
             for col in range(0, collumn_size+1):
                 row_list.append([{} for i in range(0, row_size+1)])
 
-            # preenche os cabeçalhos de colunas
+            # preenche os cabeçalhos de colunas da matriz auxiliar
             for header_position in report_id.position_ids.filtered(
                     lambda x: x.line == 0 and x.collumn > 0 and
                               x.collumn <= collumn_size):
-                for res in result:
-                    # res['header'][0]['cols'][header_position.collumn - 1]\
-                    #     ['name'] = header_position.name
-                    row_list[header_position.collumn][header_position.line] = header_position.name
+                    row_list[header_position.line][
+                        header_position.collumn] = header_position.name
 
-
-            # preenche cabeçalhos de linhas
+            # preenche cabeçalhos de linhas da matriz auxiliar
             for line_position in report_id.position_ids.filtered(
                         lambda x: x.collumn == 0 and x.line > 0 and
                                   x.line <= row_size):
-                for res in result:
-                    # res['content'][line_position.line - 1]['kpi_name'] = \
-                    #     line_position.name
-                    row_list[line_position.collumn][
-                        line_position.line] = line_position.name
+                    row_list[line_position.line][
+                        line_position.collumn] = line_position.name
 
-
+            # preenche as celulas da matriz auxiliar
             for position in report_id.position_ids.filtered(
                     lambda x: x.line > 0 and x.collumn > 0):
                 row_pos = position.line
@@ -1220,29 +1214,37 @@ class MisReportInstance(models.Model):
                         for cell in row['cols']:
                             if not isinstance(cell, dict):
                                 continue
-                            instance_period = self.env['mis.report.instance.period'].browse(cell.get('period_id'))
-                            kpi_compare = (cell.get('kpi_id') == position.kpi_id.id)
-                            period_compare = (instance_period.template_period_id == position.period_id)
+                            instance_period = self.env[
+                                'mis.report.instance.period'].browse(
+                                cell.get('period_id'))
+                            kpi_compare = (
+                                    cell.get('kpi_id') == position.kpi_id.id)
+                            period_compare = (
+                                    instance_period.template_period_id ==
+                                    position.period_id)
                             if kpi_compare and period_compare:
-                                row_list[col_pos][row_pos] = cell
+                                row_list[row_pos][col_pos] = cell
 
-                    # recria matriz com tamanho correto
-                    res['header'][0]['cols'] = []
-                    for col in range(1, collumn_size+1):
-                        res['header'][0]['cols'].append({
-                            'name': row_list[col][0] or 'SEM TITULO',
-                            'date': ''
-                        })
+            # preenche o dict result com os valores da matriz auxiliar
+            for res in result:
+                default_style = res['content'][0]['default_style']
+                # primeiro os titulos de coluna
+                res['header'][0]['cols'] = []
+                for col in range(1, collumn_size+1):
+                    res['header'][0]['cols'].append({
+                        'name': row_list[0][col] or 'coluna s/ nome',
+                        'date': ''
+                    })
 
-                    for cont in res['content']:
-                        cont['cols'] = []
-                        for line in range(0, row_size):
-                            cont['cols'].append({})
-
-                    # preenche a matriz com os valores
-                    for n_line in range(0, len(row_list)-1):
-                        for n_col in range(0, len(row_list[n_line])-1):
-                            res['content'][n_line]['cols'][n_col] = row_list[n_line+1][n_col+1]
-                            res['content'][n_line]['kpi_name'] = row_list[0][n_line-1] or 'SEM TITULO DE LINHA'
+                #depois as linhas
+                res['content'] = []
+                for line in range(1, row_size+1):
+                    kpi_name = row_list[line][0] or 'linha s/ nome'
+                    cols = [row_list[line][col] for col
+                            in range(1, collumn_size+1)]
+                    res['content'].append(
+                        {'kpi_name':kpi_name,
+                         'cols': cols,
+                         'default_style': default_style})
 
         return result
