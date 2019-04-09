@@ -306,8 +306,37 @@ class MisReport(models.Model):
         copy=True
     )
 
-
     code = fields.Char(size=32, string='Code', translate=True)
+    line = fields.Integer(
+        string='Line'
+    )
+    column = fields.Integer(
+        string='Column'
+    )
+
+    def _generate_matrix(self):
+        line = self.line + 1
+        column = self.column + 1
+        return [[0] * column for i in range(line)]
+
+    @api.multi
+    def button_matrix(self):
+        for record in self:
+            if record.column and record.line:
+                matrix = record._generate_matrix()
+
+                record.position_ids = False
+
+                position_ids = []
+
+                for i, idi in enumerate(matrix):
+                    for j, idj in enumerate(idi):
+                        position_ids.append({
+                                'line': i,
+                                'column': j,
+                            })
+
+                record.position_ids = position_ids
 
     @api.onchange('name')
     def _onchange_name_code(self):
@@ -647,7 +676,31 @@ class MisReportPosition(models.Model):
     kpi_id = fields.Many2one(
         comodel_name='mis.report.kpi',
     )
-    name = fields.Char()
+    name = fields.Char(
+        string='Name'
+    )
+    display_name = fields.Char(
+        string='Display Name',
+        compute='_compute_display_name',
+    )
+
+    @api.depends('name', 'kpi_id', 'period_id')
+    def _compute_display_name(self):
+        """
+
+        display_name = Name,
+
+        display_name = kpi.expression de 2018-02
+
+        :return:
+        """
+        for record in self:
+            if record.name:
+                record.display_name = record.name
+            elif record.kpi_id and record.period_id:
+                record.display_name = (record.kpi_id.name or '') + _(' of ') + (record.period_id.name or '')
+            else:
+                record.display_name = ' '
 
     @api.constrains('line', 'column')
     def _constraints_line_col(self):

@@ -15,6 +15,7 @@
     'depends': [
         'account',
         'report_xls',  # OCA/reporting-engine
+        'web_widget_x2many_2d_matrix',  # OCA/reporting-engine
     ],
     'data': [
         'wizard/mis_builder_dashboard.xml',

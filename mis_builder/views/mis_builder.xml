@@ -34,6 +34,20 @@
                     </group>
 
                     <notebook>
+                        <page string="Layout" attrs="{'invisible': [('manual_position', '=', False)]}">
+                            <group>
+                                <group>
+                                    <field name="line"/>
+                                    <field name="column"/>
+                                </group>
+                                <group>
+                                    <field name="id" invisible="1"/>
+                                    <button name="button_matrix" type="object" string="Gerar Tabela" attrs="{'invisible': [('id', '!=', False)]}"/>
+                                    <button name="button_matrix" type="object" string="Resetar Tabela" attrs="{'invisible': [('id', '=', False)]}"/>
+                                </group>
+                            </group>
+                            <field name="position_ids" widget="x2many_2d_matrix" field_x_axis="column" field_y_axis="line" field_value="display_name"/>
+                        </page>
                         <page string="Periods" attrs="{'invisible': [('manual_position', '=', False)]}">
                             <field name="period_ids" nolabel="1" colspan="2" widget="handle"
                                    context="{'default_report_id': active_id}"/>
@@ -41,10 +55,10 @@
                         <page string="KPI's">
                             <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
                         </page>
-                        <page string="Position" attrs="{'invisible': [('manual_position', '=', False)]}">
-                            <field name="position_ids" nolabel="1" colspan="2"
-                                   context="{'default_report_id': active_id}"/>
-                        </page>
+                        <!--<page string="Position" attrs="{'invisible': [('manual_position', '=', False)]}">-->
+                            <!--<field name="position_ids" nolabel="1" colspan="2"-->
+                                   <!--context="{'default_report_id': active_id}"/>-->
+                        <!--</page>-->
                         <page string="Queries">
                             <field name="query_ids" nolabel="1" colspan="2">
                                 <tree string="Queries" editable="bottom">
