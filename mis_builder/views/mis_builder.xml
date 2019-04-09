@@ -136,7 +136,7 @@
                 <form>
                     <group>
                         <field name="report_id" invisible="True"/>
-                        <field name="collumn"/>
+                        <field name="column"/>
                         <field name="line"/>
                         <field name="period_id" domain="[('report_id', '=', report_id)]"/>
                         <field name="kpi_id" domain="[('report_id', '=', report_id)]"/>
@@ -152,7 +152,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="report_id" invisible="True"/>
-                    <field name="collumn"/>
+                    <field name="column"/>
                     <field name="line"/>
                     <field name="period_id" domain="[('report_id', '=', report_id)]"/>
                     <field name="kpi_id"/>

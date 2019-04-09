@@ -630,14 +630,14 @@ class MisReport(models.Model):
 class MisReportPosition(models.Model):
 
     _name = 'mis.report.position'
-    _order = 'report_id, collumn, line'
+    _order = 'report_id, column, line'
 
     report_id = fields.Many2one(
         comodel_name='mis.report',
         ondelete='cascade',
         string='Report'
     )
-    collumn = fields.Integer()
+    column = fields.Integer()
     line = fields.Integer()
     period_id = fields.Many2one(
         comodel_name='mis.report.period',
@@ -649,11 +649,11 @@ class MisReportPosition(models.Model):
     )
     name = fields.Char()
 
-    @api.constrains('line', 'collumn')
+    @api.constrains('line', 'column')
     def _constraints_line_col(self):
         if self.line < 0:
             raise UserWarning('Line value can\'t be negative')
-        if self.collumn < 0:
+        if self.column < 0:
             raise UserWarning('Column value can\'t be negative')
 
 
@@ -1183,32 +1183,32 @@ class MisReportInstance(models.Model):
 
         if report_id.manual_position:
             row_list = []
-            collumn_size = max(report_id.position_ids.mapped('collumn'))
+            column_size = max(report_id.position_ids.mapped('column'))
             row_size = max(report_id.position_ids.mapped('line'))
 
             # incia matriz auxiliar no formato [coluna][linha]
-            for col in range(0, collumn_size+1):
+            for col in range(0, column_size+1):
                 row_list.append([{} for i in range(0, row_size+1)])
 
             # preenche os cabeçalhos de colunas da matriz auxiliar
             for header_position in report_id.position_ids.filtered(
-                    lambda x: x.line == 0 and x.collumn > 0 and
-                              x.collumn <= collumn_size):
+                    lambda x: x.line == 0 and x.column > 0 and
+                              x.column <= column_size):
                     row_list[header_position.line][
-                        header_position.collumn] = header_position.name
+                        header_position.column] = header_position.name
 
             # preenche cabeçalhos de linhas da matriz auxiliar
             for line_position in report_id.position_ids.filtered(
-                        lambda x: x.collumn == 0 and x.line > 0 and
+                        lambda x: x.column == 0 and x.line > 0 and
                                   x.line <= row_size):
                     row_list[line_position.line][
-                        line_position.collumn] = line_position.name
+                        line_position.column] = line_position.name
 
             # preenche as celulas da matriz auxiliar
             for position in report_id.position_ids.filtered(
-                    lambda x: x.line > 0 and x.collumn > 0):
+                    lambda x: x.line > 0 and x.column > 0):
                 row_pos = position.line
-                col_pos = position.collumn
+                col_pos = position.column
                 for res in result:
                     for row in res['content']:
                         for cell in row['cols']:
@@ -1230,7 +1230,7 @@ class MisReportInstance(models.Model):
                 default_style = res['content'][0]['default_style']
                 # primeiro os titulos de coluna
                 res['header'][0]['cols'] = []
-                for col in range(1, collumn_size+1):
+                for col in range(1, column_size+1):
                     res['header'][0]['cols'].append({
                         'name': row_list[0][col] or 'coluna s/ nome',
                         'date': ''
@@ -1241,7 +1241,7 @@ class MisReportInstance(models.Model):
                 for line in range(1, row_size+1):
                     kpi_name = row_list[line][0] or 'linha s/ nome'
                     cols = [row_list[line][col] for col
-                            in range(1, collumn_size+1)]
+                            in range(1, column_size+1)]
                     res['content'].append(
                         {'kpi_name':kpi_name,
                          'cols': cols,
