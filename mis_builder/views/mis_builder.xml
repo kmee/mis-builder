@@ -46,7 +46,7 @@
                                     <button name="button_matrix" type="object" string="Resetar Tabela" attrs="{'invisible': [('id', '=', False)]}"/>
                                 </group>
                             </group>
-                            <field name="position_ids" widget="x2many_2d_matrix" field_x_axis="column" field_y_axis="line" field_value="display_name"/>
+                            <field name="position_ids" widget="x2many_2d_matrix" field_x_axis="column" field_y_axis="line" field_value="display_name" xy_many2one="True"/>
                         </page>
                         <page string="Periods" attrs="{'invisible': [('manual_position', '=', False)]}">
                             <field name="period_ids" nolabel="1" colspan="2" widget="handle"
