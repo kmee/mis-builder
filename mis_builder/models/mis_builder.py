@@ -1239,31 +1239,30 @@ class MisReportInstance(models.Model):
 
 
         if report_id.manual_position:
-            row_list = []
-            column_size = max(report_id.position_ids.mapped('column'))
-            row_size = max(report_id.position_ids.mapped('line'))
+            row_list = report_id._generate_matrix()
+            column_size = report_id.column
+            row_size = report_id.line
 
-            # incia matriz auxiliar no formato [coluna][linha]
-            for col in range(0, column_size+1):
-                row_list.append([{} for i in range(0, row_size+1)])
+            # separa as celulas por tipo
+            header_positions = report_id.position_ids.filtered(
+                lambda x: x.line == 0 and x.column > 0 and
+                          x.column <= column_size)
+            line_positions = report_id.position_ids.filtered(
+                lambda x: x.column == 0 and x.line > 0 and
+                          x.line <= row_size)
+            positions = report_id.position_ids.filtered(
+                lambda x: x.line > 0 and x.column > 0)
 
-            # preenche os cabeçalhos de colunas da matriz auxiliar
-            for header_position in report_id.position_ids.filtered(
-                    lambda x: x.line == 0 and x.column > 0 and
-                              x.column <= column_size):
-                    row_list[header_position.line][
-                        header_position.column] = header_position.name
-
-            # preenche cabeçalhos de linhas da matriz auxiliar
-            for line_position in report_id.position_ids.filtered(
-                        lambda x: x.column == 0 and x.line > 0 and
-                                  x.line <= row_size):
-                    row_list[line_position.line][
-                        line_position.column] = line_position.name
+            # preenche os cabeçalhos de linha e coluna
+            for line_position in line_positions:
+                row_list[line_position.line][
+                    line_position.column] = line_position.name
+            for header_position in header_positions:
+                row_list[header_position.line][
+                    header_position.column] = header_position.name
 
             # preenche as celulas da matriz auxiliar
-            for position in report_id.position_ids.filtered(
-                    lambda x: x.line > 0 and x.column > 0):
+            for position in positions:
                 row_pos = position.line
                 col_pos = position.column
                 for res in result:
@@ -1292,7 +1291,6 @@ class MisReportInstance(models.Model):
                         'name': row_list[0][col] or 'coluna s/ nome',
                         'date': ''
                     })
-
                 #depois as linhas
                 res['content'] = []
                 for line in range(1, row_size+1):
