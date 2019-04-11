@@ -695,12 +695,16 @@ class MisReportPosition(models.Model):
         :return:
         """
         for record in self:
+            if record.line and not record.column:
+                record.display_name = 'line ' + str(record.line)
+            if record.column and not record.line:
+                record.display_name = 'column ' + str(record.column)
+            if record.line and record.column:
+                record.display_name = str(record.line) + 'x' + str(record.column)
             if record.name:
                 record.display_name = record.name
-            elif record.kpi_id and record.period_id:
+            if record.kpi_id and record.period_id:
                 record.display_name = (record.kpi_id.name or '') + _(' of ') + (record.period_id.name or '')
-            else:
-                record.display_name = ' '
 
     @api.constrains('line', 'column')
     def _constraints_line_col(self):
