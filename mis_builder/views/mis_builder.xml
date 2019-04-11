@@ -151,8 +151,8 @@
                 <form>
                     <group>
                         <field name="report_id" invisible="True"/>
-                        <field name="column"/>
-                        <field name="line"/>
+                        <field name="column" invisible="True"/>
+                        <field name="line" invisible="True"/>
                         <field name="period_id" domain="[('report_id', '=', report_id)]"/>
                         <field name="kpi_id" domain="[('report_id', '=', report_id)]"/>
                         <field name="name"/>
