@@ -32,33 +32,10 @@
                         <field name="description"/>
                         <field name="manual_position"/>
                     </group>
-
                     <notebook>
-                        <page string="Layout" attrs="{'invisible': [('manual_position', '=', False)]}">
-                            <group>
-                                <group>
-                                    <field name="line"/>
-                                    <field name="column"/>
-                                </group>
-                                <group>
-                                    <field name="id" invisible="1"/>
-                                    <button name="button_matrix" type="object" string="Gerar Tabela" attrs="{'invisible': [('id', '!=', False)]}"/>
-                                    <button name="button_matrix" type="object" string="Resetar Tabela" attrs="{'invisible': [('id', '=', False)]}"/>
-                                </group>
-                            </group>
-                            <field name="position_ids" widget="x2many_2d_matrix" field_x_axis="column" field_y_axis="line" field_value="display_name" xy_many2one="True"/>
-                        </page>
-                        <page string="Periods" attrs="{'invisible': [('manual_position', '=', False)]}">
-                            <field name="period_ids" nolabel="1" colspan="2" widget="handle"
-                                   context="{'default_report_id': active_id}"/>
-                        </page>
                         <page string="KPI's">
                             <field name="kpi_ids" nolabel="1" colspan="2" widget="handle"/>
                         </page>
-                        <!--<page string="Position" attrs="{'invisible': [('manual_position', '=', False)]}">-->
-                            <!--<field name="position_ids" nolabel="1" colspan="2"-->
-                                   <!--context="{'default_report_id': active_id}"/>-->
-                        <!--</page>-->
                         <page string="Queries">
                             <field name="query_ids" nolabel="1" colspan="2">
                                 <tree string="Queries" editable="bottom">
@@ -74,8 +51,25 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Periods" attrs="{'invisible': [('manual_position', '=', False)]}">
+                            <field name="period_ids" nolabel="1" colspan="2" widget="handle"
+                                   context="{'default_report_id': active_id}"/>
+                        </page>
+                        <page string="Layout" attrs="{'invisible': [('manual_position', '=', False)]}">
+                            <group>
+                                <group>
+                                    <field name="line"/>
+                                    <field name="column"/>
+                                </group>
+                                <group>
+                                    <field name="id" invisible="1"/>
+                                    <button name="button_matrix" type="object" string="Create table" attrs="{'invisible': [('id', '!=', False)]}"/>
+                                    <button name="button_matrix" type="object" string="Reset table" attrs="{'invisible': [('id', '=', False)]}"/>
+                                </group>
+                            </group>
+                            <field name="position_ids" widget="x2many_2d_matrix" field_x_axis="column" field_y_axis="line" field_value="display_name" xy_many2one="True"/>
+                        </page>
                     </notebook>
-
                     <group col="2" string="Legend (for kpi expressions)">
                         <group>
                             <label colspan="2"
@@ -285,58 +279,60 @@
             <field name="priority" eval="16"/>
             <field name="arch" type="xml">
                 <form string="MIS Report Instance" version="7.0">
-                    <div class="oe_title">
-                        <div class="oe_edit_only">
-                            <label for="name"/>
+                    <sheet>
+                        <div class="oe_title">
+                            <div class="oe_edit_only">
+                                <label for="name"/>
+                            </div>
+                            <h1>
+                                <field name="name" placeholder="Name"/>
+                            </h1>
                         </div>
-                        <h1>
-                            <field name="name" placeholder="Name"/>
-                        </h1>
-                    </div>
-                    <div class="oe_right oe_button_box" name="buttons">
-                        <button type="object" name="preview" string="Preview" icon="gtk-print-preview"/>
-                        <button type="object" name="print_pdf" string="Print" icon="gtk-print"/>
-                        <button type="object" name="export_xls" string="Export" icon="gtk-go-down"/>
-                        <button type="action" name="%(mis_report_instance_add_to_dashboard_action)d"
-                                string="Add to dashboard" icon="gtk-add"/>
-                    </div>
-                    <group col="4">
-                        <field name="report_id" colspan="4"/>
-                        <field name="description"/>
-                        <field name="landscape_pdf"/>
-                        <field name="root_account"/>
-                        <field name="company_id" groups="base.group_multi_company"/>
-                        <field name="target_move"/>
-                    </group>
-                    <group col="4" string="Periods">
-                        <group colspan="2">
-                            <field name="date"/>
+                        <div class="oe_right oe_button_box" name="buttons">
+                            <button type="object" name="preview" string="Preview" icon="gtk-print-preview"/>
+                            <button type="object" name="print_pdf" string="Print" icon="gtk-print"/>
+                            <button type="object" name="export_xls" string="Export" icon="gtk-go-down"/>
+                            <button type="action" name="%(mis_report_instance_add_to_dashboard_action)d"
+                                    string="Add to dashboard" icon="gtk-add"/>
+                        </div>
+                        <group col="4">
+                            <field name="report_id" colspan="4"/>
+                            <field name="description"/>
+                            <field name="landscape_pdf"/>
+                            <field name="root_account"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="target_move"/>
                         </group>
-                        <newline/>
-                        <group>
-                            <field name="period_ids" colspan="4" nolabel="1" widget="handle">
-                                <tree string="KPI's" editable="bottom" colors="red:valid==False">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="name"/>
-                                    <field name="type"/>
-                                    <field name="offset"/>
-                                    <field name="duration"/>
-                                    <field name="normalize_factor"/>
-                                    <field name="date_from"/>
-                                    <field name="date_to"/>
-                                    <field name="period_from"/>
-                                    <field name="period_to"/>
-                                    <field name="valid" invisible="1"/>
-                                    <field name="template_period_id" invisible="1"/>
-                                    <field name="report_instance_id" invisible="1"/>
-                                    <field name="id" invisible="1"/>
-                                    <field name="comparison_column_ids"
-                                           domain="[('report_instance_id', '=', report_instance_id), ('id', '!=', id)]"
-                                           widget="many2many_tags"/>
-                                </tree>
-                            </field>
+                        <group col="4" string="Periods">
+                            <group colspan="2">
+                                <field name="date"/>
+                            </group>
+                            <newline/>
+                            <group>
+                                <field name="period_ids" colspan="4" nolabel="1" widget="handle">
+                                    <tree string="KPI's" editable="bottom" colors="red:valid==False">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="type"/>
+                                        <field name="offset"/>
+                                        <field name="duration"/>
+                                        <field name="normalize_factor"/>
+                                        <field name="date_from"/>
+                                        <field name="date_to"/>
+                                        <field name="period_from"/>
+                                        <field name="period_to"/>
+                                        <field name="valid" invisible="1"/>
+                                        <field name="template_period_id" invisible="1"/>
+                                        <field name="report_instance_id" invisible="1"/>
+                                        <field name="id" invisible="1"/>
+                                        <field name="comparison_column_ids"
+                                               domain="[('report_instance_id', '=', report_instance_id), ('id', '!=', id)]"
+                                               widget="many2many_tags"/>
+                                    </tree>
+                                </field>
+                            </group>
                         </group>
-                    </group>
+                    </sheet>
                 </form>
             </field>
         </record>
