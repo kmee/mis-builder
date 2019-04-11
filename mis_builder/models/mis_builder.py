@@ -674,6 +674,7 @@ class MisReportPosition(models.Model):
         string='Period'
     )
     kpi_id = fields.Many2one(
+        string='KPI',
         comodel_name='mis.report.kpi',
     )
     name = fields.Char(
