@@ -1005,7 +1005,8 @@ class MisReportInstance(models.Model):
                              string="Pivot date")
     report_id = fields.Many2one('mis.report',
                                 required=True,
-                                string='Report')
+                                string='Report',
+                                ondelete='cascade')
     period_ids = fields.One2many('mis.report.instance.period',
                                  'report_instance_id',
                                  required=True,
