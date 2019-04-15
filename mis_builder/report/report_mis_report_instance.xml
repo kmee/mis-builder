@@ -42,7 +42,9 @@
                                 <t t-foreach="c_value['cols']" t-as="value">
                                   <td t-att-style="c_value['default_style']">
                                     <div t-att-style="value_value.get('style')" class="text-right">
-                                      <t t-esc="value_value['val_r']"/>
+                                      <t t-if="'val_r' in value_value">
+                                        <t t-esc="value_value['val_r']"/>
+                                      </t>
                                     </div>
                                   </td>
                                 </t>

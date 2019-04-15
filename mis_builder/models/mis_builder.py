@@ -295,7 +295,50 @@ class MisReport(models.Model):
     kpi_ids = fields.One2many('mis.report.kpi', 'report_id',
                               string='KPI\'s',
                               copy=True)
+    manual_position = fields.Boolean(string='Manual position?')
+    period_ids = fields.One2many('mis.report.period', 'report_id',
+                                 string='Lines',
+                                 copy=True)
+    position_ids = fields.One2many(
+        comodel_name='mis.report.position',
+        inverse_name='report_id',
+        string='Position',
+        copy=True
+    )
+
     code = fields.Char(size=32, string='Code', translate=True)
+    line = fields.Integer(
+        string='Line',
+        default=0
+    )
+    column = fields.Integer(
+        string='Column',
+        default=0
+    )
+
+    def _generate_matrix(self):
+        line = self.line + 1
+        column = self.column + 1
+        return [[0] * column for i in range(line)]
+
+    @api.multi
+    def button_matrix(self):
+        for record in self:
+            if record.column and record.line:
+                matrix = record._generate_matrix()
+
+                record.position_ids = False
+
+                position_ids = []
+
+                for i, idi in enumerate(matrix):
+                    for j, idj in enumerate(idi):
+                        position_ids.append({
+                                'line': i,
+                                'column': j,
+                            })
+
+                record.position_ids = position_ids
 
     @api.onchange('name')
     def _onchange_name_code(self):
@@ -574,7 +617,7 @@ class MisReport(models.Model):
                     if kpi.css_style:
                         kpi_style = safe_eval(kpi.css_style, localdict)
                 except:
-                    _logger.warning("error evaluating css stype expression %s",
+                    _logger.warning("error evaluating css style expression %s",
                                     kpi.css_style, exc_info=True)
                     kpi_style = None
 
@@ -590,6 +633,7 @@ class MisReport(models.Model):
                     'prefix': kpi.prefix,
                     'suffix': kpi.suffix,
                     'dp': kpi.dp,
+                    'kpi_id': kpi.id,
                     'is_percentage': kpi.type == 'pct',
                     'period_id': period_id,
                     'expr': kpi.expression,
@@ -612,6 +656,101 @@ class MisReport(models.Model):
             recompute_queue = self.env['mis.report.kpi']
 
         return res
+
+
+class MisReportPosition(models.Model):
+
+    _name = 'mis.report.position'
+    _order = 'report_id, column, line'
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    column = fields.Integer()
+    line = fields.Integer()
+    period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        ondelete='cascade',
+        string='Period'
+    )
+    kpi_id = fields.Many2one(
+        string='KPI',
+        comodel_name='mis.report.kpi',
+    )
+    name = fields.Char(
+        string='Name'
+    )
+    display_name = fields.Char(
+        string='Display Name',
+        compute='_compute_display_name',
+    )
+
+    @api.depends('name', 'kpi_id', 'period_id')
+    def _compute_display_name(self):
+        """
+
+        display_name = Name,
+
+        display_name = kpi.expression de 2018-02
+
+        :return:
+        """
+        for record in self:
+            if record.line and not record.column:
+                record.display_name = 'line ' + str(record.line)
+            if record.column and not record.line:
+                record.display_name = 'column ' + str(record.column)
+            if record.line and record.column:
+                record.display_name = str(record.line) + 'x' + str(record.column)
+            if record.name:
+                record.display_name = record.name
+            if record.kpi_id and record.period_id:
+                record.display_name = (record.kpi_id.name or '') + _(' of ') + (record.period_id.name or '')
+
+    @api.constrains('line', 'column')
+    def _constraints_line_col(self):
+        if self.line < 0:
+            raise UserWarning('Line value can\'t be negative')
+        if self.column < 0:
+            raise UserWarning('Column value can\'t be negative')
+
+
+class MisReportPeriod(models.Model):
+    _name = 'mis.report.period'
+
+    _order = 'sequence, id'
+
+    name = fields.Char(
+        string='Name',
+    )
+
+    report_id = fields.Many2one(
+        comodel_name='mis.report',
+        ondelete='cascade',
+        string='Report'
+    )
+    type = fields.Selection([('d', _('Day')),
+                             ('w', _('Week')),
+                             ('fp', _('Fiscal Period')),
+                             ],
+                            required=True,
+                            string='Period type')
+    offset = fields.Integer(string='Offset',
+                            help='Offset from current period',
+                            default=-1)
+    duration = fields.Integer(string='Duration',
+                              help='Number of periods',
+                              default=1)
+    sequence = fields.Integer(string='Sequence', default=1)
+
+    _sql_constraints = [
+        ('duration', 'CHECK (duration>0)',
+         'Wrong duration, it must be positive!'),
+        ('name_unique', 'unique(name, report_id)',
+         'Period template name should be unique by report template'),
+    ]
 
 
 class MisReportInstancePeriod(models.Model):
@@ -711,6 +850,11 @@ class MisReportInstancePeriod(models.Model):
         string='Factor',
         help='Factor to use to normalize the period (used in comparison',
         default=1)
+    template_period_id = fields.Many2one(
+        comodel_name='mis.report.period',
+        string='Template Period',
+        copy=True
+    )
 
     _order = 'sequence, id'
 
@@ -823,6 +967,7 @@ class MisReportInstancePeriod(models.Model):
     @api.multi
     def _compute(self, report_id, lang_id, aep):
         self.ensure_one()
+
         return report_id._compute(
             lang_id, aep,
             self.date_from, self.date_to,
@@ -860,7 +1005,8 @@ class MisReportInstance(models.Model):
                              string="Pivot date")
     report_id = fields.Many2one('mis.report',
                                 required=True,
-                                string='Report')
+                                string='Report',
+                                ondelete='cascade')
     period_ids = fields.One2many('mis.report.instance.period',
                                  'report_instance_id',
                                  required=True,
@@ -893,6 +1039,22 @@ class MisReportInstance(models.Model):
         date_format = self.env['res.lang'].browse(lang_id).date_format
         return datetime.datetime.strftime(
             fields.Date.from_string(date), date_format)
+
+    @api.onchange('report_id')
+    def _onchange_report_id(self):
+        if not self.report_id:
+            return {}
+        if not self.report_id.period_ids:
+            return {}
+        self.period_ids = [
+            [0, 0, {
+                'name': period_id.name,
+                'type': period_id.type,
+                'offset': period_id.offset,
+                'duration': period_id.duration,
+                'sequence': period_id.sequence,
+                'template_period_id': period_id.id,
+            }] for period_id in self.report_id.period_ids]
 
     @api.multi
     def preview(self):
@@ -1078,4 +1240,70 @@ class MisReportInstance(models.Model):
                     row for row in content
                     if row['column'] == column and not row['column_title']],
             })
+
+
+        if report_id.manual_position:
+            row_list = report_id._generate_matrix()
+            column_size = report_id.column
+            row_size = report_id.line
+
+            # separa as celulas por tipo
+            header_positions = report_id.position_ids.filtered(
+                lambda x: x.line == 0 and x.column > 0 and
+                          x.column <= column_size)
+            line_positions = report_id.position_ids.filtered(
+                lambda x: x.column == 0 and x.line > 0 and
+                          x.line <= row_size)
+            positions = report_id.position_ids.filtered(
+                lambda x: x.line > 0 and x.column > 0)
+
+            # preenche os cabeçalhos de linha e coluna
+            for line_position in line_positions:
+                row_list[line_position.line][
+                    line_position.column] = line_position.name
+            for header_position in header_positions:
+                row_list[header_position.line][
+                    header_position.column] = header_position.name
+
+            # preenche as celulas da matriz auxiliar
+            for position in positions:
+                row_pos = position.line
+                col_pos = position.column
+                for res in result:
+                    for row in res['content']:
+                        for cell in row['cols']:
+                            if not isinstance(cell, dict):
+                                continue
+                            instance_period = self.env[
+                                'mis.report.instance.period'].browse(
+                                cell.get('period_id'))
+                            kpi_compare = (
+                                    cell.get('kpi_id') == position.kpi_id.id)
+                            period_compare = (
+                                    instance_period.template_period_id ==
+                                    position.period_id)
+                            if kpi_compare and period_compare:
+                                row_list[row_pos][col_pos] = cell
+
+            # preenche o dict result com os valores da matriz auxiliar
+            for res in result:
+                default_style = res['content'][0]['default_style']
+                # primeiro os titulos de coluna
+                res['header'][0]['cols'] = []
+                for col in range(1, column_size+1):
+                    res['header'][0]['cols'].append({
+                        'name': row_list[0][col] or 'coluna s/ nome',
+                        'date': ''
+                    })
+                #depois as linhas
+                res['content'] = []
+                for line in range(1, row_size+1):
+                    kpi_name = row_list[line][0] or 'linha s/ nome'
+                    cols = [row_list[line][col] for col
+                            in range(1, column_size+1)]
+                    res['content'].append(
+                        {'kpi_name':kpi_name,
+                         'cols': cols,
+                         'default_style': default_style})
+
         return result
