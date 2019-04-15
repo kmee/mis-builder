@@ -308,10 +308,12 @@ class MisReport(models.Model):
 
     code = fields.Char(size=32, string='Code', translate=True)
     line = fields.Integer(
-        string='Line'
+        string='Line',
+        default=0
     )
     column = fields.Integer(
-        string='Column'
+        string='Column',
+        default=0
     )
 
     def _generate_matrix(self):
