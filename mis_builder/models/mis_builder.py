@@ -319,7 +319,7 @@ class MisReport(models.Model):
     def _generate_matrix(self):
         line = self.line + 1
         column = self.column + 1
-        return [[0] * column for i in range(line)]
+        return [[{}] * column for i in range(line)]
 
     @api.multi
     def button_matrix(self):
