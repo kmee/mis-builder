@@ -122,7 +122,8 @@ class MisBuilderXls(report_xls):
                             val = val / 0.01
                         ws.write(row_pos, col, val, kpi_cell_style)
                     else:
-                        ws.write(row_pos, col, value['val_r'], kpi_cell_style)
+                        if 'val_r' in value:
+                            ws.write(row_pos, col, value['val_r'], kpi_cell_style)
                 row_pos += 1
             row_pos -= len(data['content'])
 
