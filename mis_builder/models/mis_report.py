@@ -605,20 +605,14 @@ class MisReport(models.Model):
                 data = model.search_read(domain, field_names)
                 res[query.name] = [AutoStruct(**d) for d in data]
             elif query.aggregate == "sum" and all_stored:
-                # use read_group to sum stored fields
-                data = model.read_group(domain, field_names, [])
-                s = AutoStruct(count=data[0]["__count"])
-                for field_name in field_names:
-                    try:
-                        v = data[0][field_name]
-                    except KeyError:
-                        _logger.error(
-                            "field %s not found in read_group for %s; not summable?",
-                            field_name,
-                            model._name,
-                        )
-                        v = AccountingNone
-                    setattr(s, field_name, v)
+                # use read_group to sum stored fields; since 20.0 read_group
+                # takes (domain, groupby, aggregates) and returns tuples, and
+                # without groupby it returns exactly one row
+                aggregates = ["__count", *(f"{f}:sum" for f in field_names)]
+                row = model.read_group(domain, [], aggregates)[0]
+                s = AutoStruct(count=row[0])
+                for field_name, value in zip(field_names, row[1:], strict=True):
+                    setattr(s, field_name, value)
                 res[query.name] = s
             else:
                 data = model.search_read(domain, field_names)
